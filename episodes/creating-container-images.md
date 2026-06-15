@@ -297,23 +297,22 @@ Here are some things to consider when creating your own container image:
   as your main tool, start with a [Python container
   image](https://hub.docker.com/_/python). Same with the
   [R programming language](https://hub.docker.com/r/rocker/r-ver/). We've used Alpine Linux as an
-  example
-  in this lesson, but it's generally not a good container image to start with for initial development and experimentation because it is
+  example in this lesson, but it's generally not a good container image to start with for initial development and experimentation because it is
   a less common distribution of Linux; using [Ubuntu](https://hub.docker.com/_/ubuntu), [Debian](https://hub.docker.com/_/debian) and [Alma](https://hub.docker.com/_/almalinux) are all
   good options for scientific software installations. The program you're using might
   recommend a particular distribution of Linux, and if so, it may be useful to start with a container image for that distribution.
 - **How big?** How much software do you really need to install? When you have a choice,
   lean towards using smaller starting container images and installing only what's needed for
   your software, as a bigger container image means longer download times to use.
-- **Know (or Google) your Linux**. Different distributions of Linux often have distinct sets of tools for installing software. The `apk` command we used above is the software package installer for Alpine Linux. The installers for various common Linux distributions are listed below:
-  - Ubuntu: `apt` or `apt-get`
-  - Debian: `deb`
+- **Know (or Google) your Linux**. Different distributions of Linux often have distinct sets of tools for installing software.
+  The `apk` command we used above is the software package installer for Alpine Linux. The installers for various common Linux distributions are listed below:
+  - Ubuntu and other Debian derivatives: `apt`
   - Alma/Rocky/Fedora: `dnf`
-  - SUSE: `zypper`  
-    Most common software installations are available to be installed via these tools.
-    A web search for "install X on Y Linux" is usually a good start for common software
-    installation tasks; if something isn't available via the Linux distribution's installation
-    tools, try the options below.
+  - SUSE: `zypper`
+  Most common software installations are available to be installed via these tools.
+  A web search for "install X on Y Linux" is usually a good start for common software
+  installation tasks; if something isn't available via the Linux distribution's installation
+  tools, try the options below.
 - **Use what you know**. You've probably used commands like `pip` or `install.packages()`
   before on your own computer -- these will also work to install things in container images (if the basic scripting
   language is installed).
