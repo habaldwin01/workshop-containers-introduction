@@ -32,101 +32,20 @@ a container image. Note that the examples will get gradually
 more and more complex -- most day-to-day use of containers and container images can be accomplished
 using the first 1--2 sections on this page.
 
-## Using scripts and files from outside the container
+## Linking our container to the computer's filesystem
 
-In your shell, change to the `sum` folder in the `podman-intro` folder and look at
-the files inside.
-
-```bash
-$ cd ~/Desktop/podman-intro/sum
-$ ls
-```
-
-This folder has both a `Dockerfile` and a Python script called `sum.py`. Let's say
-we wanted to try running the script using a container based on our recently created `alpine-python`
-container image.
-
-:::::::::::::::::::::::::::::::::::::::  challenge
-
-## Running containers
-
-Question: What command would we use to run Python from the `alpine-python` container?
-
-
-:::::::::::::::  solution
-
-## Solution
-
-We can run a container from the alpine-python container image using:
-
-```bash
-$ podman container run alice/alpine-python python3 sum.py
-```
-
-What happens? Since the `Dockerfile` that we built this container image from
-had a `CMD` entry that specified `["python3", "--version"]`, running the above
-command simply starts a container from the image, runs the `python3 --version`
-command and exits. You should have seen the installed version of Python printed
-to the terminal.
-
-Instead, if we want to run an interactive Python terminal, we can use `podman
-container run` to override the default run command embedded within the
-container image. So we could run:
-
-```bash
-$ podman container run -it alice/alpine-python python3
-```
-
-The `-it` tells Podman to set up and interactive terminal connection to the
-running container, and then we're telling Podman to run the `python3` command
-inside the container which gives us an interactive Python interpreter prompt.
-_(type `exit()` to exit!)_
-
-:::::::::::::::::::::::::
-
-::::::::::::::::::::::::::::::::::::::::::::::::::
-
-If we try running the container and Python script, what happens?
-
-```bash
-$ podman container run alice/alpine-python python3 sum.py
-```
-
-```output
-python3: can't open file '//sum.py': [Errno 2] No such file or directory
-```
-
-:::::::::::::::::::::::::::::::::::::::  challenge
-
-## No such file or directory
-
-Question: What does the error message mean? Why might the Python inside the container
-not be able to find or open our script?
-
-This question is here for you to think about - we explore the answer to this
-question in the content below.
-
-::::::::::::::::::::::::::::::::::::::::::::::::::
-
-The problem here is that the container and its filesystem is separate from our
-host computer's filesystem. When the container runs, it can't see anything outside
-itself, including any of the files on our computer. In order to use Python
-(inside the container) and our script (outside the container, on our host computer),
-we need to create a link between the directory on our computer and the container.
-
-This link is called a "mount" and is what happens automatically when a USB drive
-or other external hard drive gets connected to a computer -- you can see the
-contents appear as if they were on your computer.
+We often want to use files that live outside of our container, either because they are too big
+or are constantly changing. Having a link to our computer from inside the container can be very useful, and often essential for many workflows.
 
 We can create a mount between our computer and the running container by using an additional
 option to `podman container run`. We'll also use the variable `${PWD}` which will substitute
 in our current working directory. The option will look like this
 
-`--mount type=bind,source=${PWD},target=/temp`
+`--mount type=bind,source=${PWD},target=/data`
 
 What this means is: make my current working directory (on the host computer) -- the source --
 *visible* within the container that is about to be started, and inside this container, name the
-directory `/temp` -- the target.
+directory `/data` -- the target.
 
 :::::::::::::::::::::::::::::::::::::::::  callout
 
@@ -142,30 +61,44 @@ topic. You can find more information on the different mount types in
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
-Let's try running the command now:
+# TODO: Fix mount section to use a proper example
+
+Let's add a new line to the `Dockerfile` we've been using so far to create a copy of `csv_sum.py`.
+We can do so by using the `COPY` keyword.
+
+```
+COPY csv_sum.py /app/
+```
+
+The `csv_sum.py` program takes in a CSV file and gives us another CSV file with all the lines summed up.
+
+Let's build the container and tag it with something new:
 
 ```bash
-$ podman container run --mount type=bind,source=${PWD},target=/temp alice/alpine-python python3 sum.py
+$ podman image build -t alice/csv_sum .
 ```
 
-But we get the same error!
-
-```output
-python3: can't open file '//sum.py': [Errno 2] No such file or directory
-```
-
-This final piece is a bit tricky -- we really have to remember to put ourselves
-inside the container. Where is the `sum.py` file? It's in the directory that's been
-mapped to `/temp` -- so we need to include that in the path to the script. This
-command should give us what we need:
+To use this container, we need a way to access data on the host computer without copying it in the build step.
+Using the bind mount from earlier, we can try and run the file with our input data `plankton.csv` and output `output.csv`:
 
 ```bash
-$ podman container run --mount type=bind,source=${PWD},target=/temp alice/alpine-python python3 /temp/sum.py
+$ podman container run --mount type=bind,source=${PWD},target=/data alice/csv_sum python3 /app/csv_sum.py /data/plankton.csv /data/output.csv
 ```
 
-Note that if we create any files in the `/temp` directory while the container is
-running, these files will appear on our host filesystem in the original directory
-and will stay there even when the container stops.
+:::::::::::::::::::::::::::::::::::::::::  callout
+
+## Paths inside containers
+
+Notice how we've specified `/app/` and `/data/` with a leading slash, from the root of the container. While this would be very messy on a real Linux computer,
+it's very common to see oddly named directories on the root of a container. `/app` is a very common place to see scripts and code copied to within a container.
+Similarly, a bind mounted area may be at a root location such as `/data`, or might be in a more FHS-like place such as `/mnt/data`.
+
+::::::::::::::::::::::::::::::::::::::::::::::::::
+
+You should now see an output CSV file plopped right back into your current working directory. This is bind mounts at work. We can have a container to package
+up all of our code into a nice controlled environment, while still allowing access to our files. As we can also say where we want the source to come from, we can also limit a container's
+access to our host computer. It's really important to limit the scope of bind mounts, especially when you're running a container for the first time. Remember that the container can
+do whatever it wants to the source directory given in the bind mount.
 
 :::::::::::::::::::::::::::::::::::::::::  callout
 
@@ -190,27 +123,6 @@ container as.  This is helpful if you'd like to write files to a mounted folder
 and not write them as `root` but rather your own user identity and group.
 A common example of the `-u` flag is `--user $(id -u):$(id -g)` which will
 fetch the current user's ID and group and run the container as that user.
-
-::::::::::::::::::::::::::::::::::::::::::::::::::
-
-:::::::::::::::::::::::::::::::::::::::  challenge
-
-## Exercise: Explore the script
-
-What happens if you use the `podman container run` command above to sun `sum.py`
-and put numbers after the script name?
-
-:::::::::::::::  solution
-
-## Solution
-
-This script comes from [the Python Wiki](https://wiki.python.org/moin/SimplePrograms)
-and is set to add all numbers
-that are passed to it as arguments.
-
-
-
-:::::::::::::::::::::::::
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -241,70 +153,8 @@ More generally, every Podman command will have the form:
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
-:::::::::::::::::::::::::::::::::::::::  challenge
-
-## Exercise: Interactive jobs
-
-Try using the directory mount option but run the container interactively.
-Can you find the folder that's connected to your host computer? What's inside?
-
-:::::::::::::::  solution
-
-## Solution
-
-The Podman command to run the container interactively is:
-
-```bash
-$ podman container run --mount type=bind,source=${PWD},target=/temp -it alice/alpine-python sh
-```
-
-Once inside, you should be able to navigate to the `/temp` folder
-and see that its contents are the same as the files on your host computer:
-
-```bash
-/# cd /temp
-/# ls
-```
-
-:::::::::::::::::::::::::
-
-::::::::::::::::::::::::::::::::::::::::::::::::::
-
 Mounting a directory can be very useful when you want to run the software inside your container on many different input files.
-In other situations, you may want to save or archive an authoritative version of your data by adding it to the container image permanently.  That's what we will cover next.
-
-## Including your scripts and data within a container image
-
-Our next project will be to add our own files to a container image -- something you
-might want to do if you're sharing a finished analysis or just want to have
-an archived copy of your entire analysis including the data. Let's assume that we've finished with our `sum.py`
-script and want to add it to the container image itself.
-
-In your shell, you should still be in the `sum` folder in the `podman-intro` folder.
-
-```bash
-$ pwd
-```
-
-```bash
-$ /Users/yourname/Desktop/podman-intro/sum
-```
-
-Let's add a new line to the `Dockerfile` we've been using so far to create a copy of `sum.py`.
-We can do so by using the `COPY` keyword.
-
-```
-COPY sum.py /home
-```
-
-This line will cause Podman to copy the file from your computer into the container's
-filesystem. Let's build the container image like before, but give it a different name:
-
-```bash
-$ podman image build -t alice/alpine-sum .
-```
-
-:::::::::::::::::::::::::::::::::::::::::  callout
+In other situations, you may want to save or archive an authoritative version of your data by adding it to the container image permanently. That's what we will cover next.
 
 ## The Importance of Command Order in a Dockerfile
 
@@ -324,79 +174,6 @@ image instead of `sum.py`.
 If the `COPY` line came before the `RUN` line, it would need to rebuild the whole image.
 If the `COPY` line came second then it would use the cached `RUN` layer from the previous
 build and then only rebuild the `COPY` layer.
-
-::::::::::::::::::::::::::::::::::::::::::::::::::
-
-:::::::::::::::::::::::::::::::::::::::  challenge
-
-## Exercise: Did it work?
-
-Can you remember how to run a container interactively? Try that with this one.
-Once inside, try running the Python script.
-
-:::::::::::::::  solution
-
-## Solution
-
-You can start the container interactively like so:
-
-```bash
-$ podman container run -it alice/alpine-sum sh
-```
-
-You should be able to run the python command inside the container like this:
-
-```bash
-/# python3 /home/sum.py
-```
-
-:::::::::::::::::::::::::
-
-::::::::::::::::::::::::::::::::::::::::::::::::::
-
-This `COPY` keyword can be used to place your own scripts or own data into a container image
-that you want to publish or use as a record. Note that it's not necessarily a good idea
-to put your scripts inside the container image if you're constantly changing or editing them.
-Then, referencing the scripts from outside the container is a good idea, as we
-did in the previous section. You also want to think carefully about size -- if you
-run `podman image ls` you'll see the size of each container image all the way on the right of
-the screen. The bigger your container image becomes, the harder it will be to easily download.
-
-:::::::::::::::::::::::::::::::::::::::::  callout
-
-## Security Warning
-
-Login credentials including passwords, tokens, secure access tokens or other secrets
-must never be stored in a container. If secrets are stored, they are at high risk to
-be found and exploited when made public.
-
-
-::::::::::::::::::::::::::::::::::::::::::::::::::
-
-:::::::::::::::::::::::::::::::::::::::::  callout
-
-## Copying alternatives
-
-Another trick for getting your own files into a container image is by using the `RUN`
-keyword and downloading the files from the internet. For example, if your code
-is in a GitHub repository, you could include this statement in your Dockerfile
-to download the latest version every time you build the container image:
-
-```
-RUN git clone https://github.com/alice/mycode
-```
-
-Similarly, the `wget` command can be used to download any file publicly available
-on the internet:
-
-```
-RUN wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.10.0/ncbi-blast-2.10.0+-x64-linux.tar.gz
-```
-
-Note that the above `RUN` examples depend on commands (`git` and `wget` respectively) that
-must be available within your container: Linux distributions such as Alpine may require you to
-install such commands before using them within `RUN` statements.
-
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -537,8 +314,7 @@ demonstrating how the rules highlighted by the paper can be applied.
 
 :::::::::::::::::::::::::::::::::::::::: keypoints
 
-- Podman allows containers to read and write files from the Podman host.
-- You can include files from your Podman host into your container images by using the `COPY` instruction in your `Dockerfile`.
+- Podman allows containers to read and write files from the Podman host using bind mounts.
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 

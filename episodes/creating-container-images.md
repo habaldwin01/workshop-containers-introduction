@@ -243,6 +243,119 @@ in this example.
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
+## Running our script
+
+We've now built the container and can now try running our code. We've already seen how to run particular programs in a container, so let's see what happens:
+
+```bash
+$ podman container run alice/alpine-python python3 sum.py
+```
+
+```output
+python3: can't open file '//sum.py': [Errno 2] No such file or directory
+```
+
+We find it doesn't work!
+
+:::::::::::::::::::::::::::::::::::::::  challenge
+
+## No such file or directory
+
+Question: What does the error message mean? Why might the Python inside the container
+not be able to find or open our script?
+
+This question is here for you to think about - we explore the answer to this
+question in the content below.
+
+::::::::::::::::::::::::::::::::::::::::::::::::::
+
+The problem here is that the container and its filesystem is separate from our
+host computer's filesystem. When the container runs, it can't see anything outside
+itself, including any of the files on our computer. In order to use Python
+(inside the container) and our script (outside the container, on our host computer),
+we need to include this file inside our docker container explicitly.
+
+## Including your scripts and data within a container image
+
+Let's assume that we want to package our `sum.py` script up into the container image itself.
+
+In your shell, you should still be in the `sum` folder in the `podman-intro` folder.
+
+```bash
+$ pwd
+```
+
+```bash
+$ /Users/yourname/Desktop/podman-intro/sum
+```
+
+Let's add a new line to the `Dockerfile` we've been using so far to create a copy of `sum.py`.
+We can do so by using the `COPY` keyword.
+
+```
+COPY sum.py /home
+```
+
+This line will cause Podman to copy the file from your computer into the container's
+filesystem. Let's build the container image like before, but give it a different name:
+
+```bash
+$ podman image build -t alice/alpine-sum .
+```
+
+This `COPY` keyword can be used to place your own scripts into a container image
+that you want to publish or use as a record. Note that it's not necessarily a good idea
+to put your scripts inside the container image if you're constantly changing or editing them.
+We'll look at another option in the next chapter which you can use to link to files on
+your computer so you can use them from inside your container.
+
+
+When using `COPY`, you also want to think carefully about size -- if you
+run `podman image ls` you'll see the size of each container image all the way on the right of
+the screen. The bigger your container image becomes, the harder it will be to easily download.
+
+:::::::::::::::::::::::::::::::::::::::::  callout
+
+## Security Warning
+
+Login credentials including passwords, tokens, secure access tokens or other secrets
+must never be stored in a container. If secrets are stored, they are at high risk to
+be found and exploited when made public.
+
+
+::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:::::::::::::::::::::::::::::::::::::::::  callout
+
+## Copying alternatives
+
+Another trick for getting your own files into a container image is by using the `RUN`
+keyword and downloading the files from the internet. For example, if your code
+is in a GitHub repository, you could include this statement in your Dockerfile
+to download the latest version every time you build the container image:
+
+```
+RUN git clone https://github.com/alice/mycode
+```
+
+Similarly, the `wget` command can be used to download any file publicly available
+on the internet:
+
+```
+RUN wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.10.0/ncbi-blast-2.10.0+-x64-linux.tar.gz
+```
+
+Note that the above `RUN` examples depend on commands (`git` and `wget` respectively) that
+must be available within your container: Linux distributions such as Alpine may require you to
+install such commands before using them within `RUN` statements.
+
+
+::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+:::::::::::::::::::::::::::::::::::::::::  callout
+
+
 :::::::::::::::::::::::::::::::::::::::  challenge
 
 ## Exercise: Review!
@@ -383,6 +496,7 @@ using `podman image push docker.io/alice/workflow-complete:v1`
 
 - `Dockerfile`s specify what is within container images.
 - The `podman image build` command is used to build a container image from a `Dockerfile`.
+- You can include files from your Podman host into your container images by using the `COPY` instruction in your `Dockerfile`.
 - You can share your container images through the Docker Hub so that others can create containers from your container images.
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::
