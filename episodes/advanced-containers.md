@@ -308,10 +308,6 @@ demonstrating how the rules highlighted by the paper can be applied.
 <small>[1] Nüst D, Sochat V, Marwick B, Eglen SJ, Head T, et al. (2020) Ten simple rules for writing Dockerfiles for reproducible data science. PLOS Computational Biology 16(11): e1008316. [https://doi.org/10.1371/journal.pcbi.1008316](https://doi.org/10.1371/journal.pcbi.1008316)</small>
 
 
-::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
-
 :::::::::::::::::::::::::::::::::::::::: keypoints
 
 - Podman allows containers to read and write files from the Podman host using bind mounts.
