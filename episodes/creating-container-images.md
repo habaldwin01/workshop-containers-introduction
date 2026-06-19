@@ -353,9 +353,6 @@ install such commands before using them within `RUN` statements.
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
-:::::::::::::::::::::::::::::::::::::::::  callout
-
-
 :::::::::::::::::::::::::::::::::::::::  challenge
 
 ## Exercise: Review!
