@@ -348,10 +348,10 @@
       <div class="d-none d-sm-none d-md-block">
         <a class="chapter-link" href="../instructor/advanced-containers.html" rel="prev">
           <i aria-hidden="true" class="small-arrow" data-feather="arrow-left"></i>
-          Previous: Creating More
+          Previous: Creating More Complex Container Images...
         </a>
         <a class="chapter-link float-end" href="../instructor/singularity.html" rel="next">
-          Next: Running Containers...
+          Next: Running Containers on HPC...
           <i aria-hidden="true" class="small-arrow" data-feather="arrow-right"></i>
         </a>
       </div>
@@ -433,7 +433,7 @@ into mounted as <code>/home/jovyan/work</code>.</li>
 <button class="accordion-button solution-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSolution1" aria-expanded="false" aria-controls="collapseSolution1">
   <h4 class="accordion-header" id="headingSolution1"> Show me the solution </h4>
 </button>
-<div id="collapseSolution1" class="accordion-collapse collapse" data-bs-parent="#accordionSolution1" aria-labelledby="headingSolution1">
+<div id="collapseSolution1" class="accordion-collapse collapse" aria-labelledby="headingSolution1" data-bs-parent="#accordionSolution1">
 <div class="accordion-body">
 <p>The documentation from <a href="https://jupyter-docker-stacks.readthedocs.io/en/latest/" class="external-link">https://jupyter-docker-stacks.readthedocs.io/en/latest/</a>
 mentions the base-notebook image hosted on the quay.io container
@@ -509,11 +509,11 @@ visualise</p>
 </h3>
 <pre class="sourceCode bash" tabindex="0"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1" aria-label="code-block-7-1"></a><span class="ex">podman</span> container run <span class="at">--mount</span> type=bind,source=<span class="va">$PWD</span>/docker-gdal-demo-main,target=/home/jovyan/work <span class="at">-p</span> 8888:8888 jupyter-gdal</span></code></pre>
 </div>
-<div id="discussion1" class="callout discussion">
+<div id="challenge2" class="callout challenge">
 <div class="callout-square">
-<i class="callout-icon" data-feather="message-circle"></i>
+<i class="callout-icon" data-feather="zap"></i>
 </div>
-<span class="callout-header">Discussion</span>
+<span class="callout-header">Challenge</span>
 <div class="callout-inner">
 <h3 class="callout-title">Challenge</h3>
 <div class="callout-content">
@@ -555,10 +555,10 @@ images in your research project.</li>
       <div class="d-none d-sm-none d-md-block">
         <a class="chapter-link" href="../instructor/advanced-containers.html" rel="prev">
           <i aria-hidden="true" class="small-arrow" data-feather="arrow-left"></i>
-          Previous: Creating More
+          Previous: Creating More Complex Container Images...
         </a>
         <a class="chapter-link float-end" href="../instructor/singularity.html" rel="next">
-          Next: Running Containers...
+          Next: Running Containers on HPC...
           <i aria-hidden="true" class="small-arrow" data-feather="arrow-right"></i>
         </a>
       </div>
@@ -584,7 +584,7 @@ images in your research project.</li>
         <p>Materials licensed under <a href="LICENSE.html">CC-BY 4.0</a> by the authors</p>
 
         <p>Template licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="external-link">CC-BY 4.0</a> by <a href="https://carpentries.org/" class="external-link">The Carpentries</a></p>
-        <p>Built with <a href="https://github.com/carpentries/sandpaper/tree/0.20.2" class="external-link">sandpaper (0.20.2)</a>, <a href="https://github.com/carpentries/pegboard/tree/0.7.9" class="external-link">pegboard (0.7.9)</a>, and <a href="https://github.com/carpentries/varnish/tree/1.1.1" class="external-link">varnish (1.1.1)</a></p>
+        <p>Built with <a href="https://github.com/carpentries/sandpaper/tree/0.21.0" class="external-link">sandpaper (0.21.0)</a>, <a href="https://github.com/carpentries/pegboard/tree/0.7.9" class="external-link">pegboard (0.7.9)</a>, and <a href="https://github.com/carpentries/varnish/tree/1.1.2" class="external-link">varnish (1.1.2)</a></p>
 		</div>
 		</footer></div> <!-- / div.container -->
 	<div id="to-top">
@@ -607,7 +607,7 @@ images in your research project.</li>
   "identifier": "https://preview.carpentries.org/docker-introduction/instructor/docker-image-examples.html",
   "dateCreated": "2026-06-19",
   "dateModified": "2026-06-19",
-  "datePublished": "2026-08-25"
+  "datePublished": "2026-09-01"
 }
 
   </script><script>
